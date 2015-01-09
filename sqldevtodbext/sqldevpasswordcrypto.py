@@ -11,8 +11,11 @@ import base64
 from argh import arg, dispatch_command
 
 def decryptv4(ciphertext, password, salt='\x05\x13\x99\x42\x93\x72\xE8\xAD', iterations=42):
-    """Mimic Java's PBEWithMD5AndDES algorithm to produce a DES key"""
+    """
+    Decrypts PBEWithMD5AndDES encrypted password.
 
+    The default salt and iteration values are from Oracle SQL Developer v4.
+    """
     ciphertext = ciphertext.decode('base64')
 
     hasher = MD5.new()
@@ -30,10 +33,12 @@ def decryptv4(ciphertext, password, salt='\x05\x13\x99\x42\x93\x72\xE8\xAD', ite
     return Padding.removePadding(plaintext, blocksize=Padding.DES_blocksize)
 
 def encryptv4(plaintext, password, salt='\x05\x13\x99\x42\x93\x72\xE8\xAD', iterations=42):
-    """Mimic Java's PBEWithMD5AndDES algorithm to produce a DES key"""
+    """
+    Encrypts as password using Java's PBEWithMD5AndDES method.
 
+    The default salt and iteration values are from Oracle SQL Developer v4.
+    """
     # http://stackoverflow.com/questions/24168246/replicate-javas-pbewithmd5anddes-in-python-2-7
-
     plaintext = Padding.appendPadding(plaintext, blocksize=Padding.DES_blocksize)
 
     hasher = MD5.new()
@@ -51,6 +56,9 @@ def encryptv4(plaintext, password, salt='\x05\x13\x99\x42\x93\x72\xE8\xAD', iter
     return encrypted.encode('base64')
 
 def decrypt(password):
+    """
+    Decrypts an Oracle SQL Developer v2 or v3 stored password.
+    """
     const = bytes(password[0:2])
     key = bytes(password[2:18])
     ciphertext = bytes(password[18:])
@@ -70,6 +78,9 @@ def decrypt(password):
     return plaintext
 
 def encrypt(plaintext):
+    """
+    Encrypts a password for Oracle SQL Developer v2 or v3.
+    """
     key = Random.get_random_bytes(8)
 
     iv = b'0000000000000000'.decode("hex")
@@ -87,16 +98,24 @@ def encrypt(plaintext):
      help="Decrypts the inputs. The default operation is to encrypt them.")
 @arg('passwords', metavar='password', type=str, nargs='+',
      help='The strings to encrypt or decrypt')
-def cli(reverse, passwords):
+@arg('--v4', action='store_true', default=False, 
+     help='Uses the SQL Developer v4 method to encrypt and decrypt passwords.')
+def cli(reverse, passwords, v4=False, key='password'):
     longest = len(max(passwords, key=len))
 
     format_str = '%' + str(longest) + 's : %s'
 
     for password in passwords:
-        if reverse:
-            output = decrypt(password)
+        if v4:
+            if reverse:
+                output = decryptv4(password, key)
+            else:
+                output = encryptv4(password, key)
         else:
-            output = encrypt(password)
+            if reverse:
+                output = decrypt(password)
+            else:
+                output = encrypt(password)
 
         print format_str % (password, output)
 

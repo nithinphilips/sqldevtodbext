@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-"""sqldevtodbext.stuff: stuff module within the sqldevtodbext package."""
+"""sqldevtodbext.sqldevfileparser: Parses SQL Developer connection.xml files"""
 
 import re
 
@@ -10,27 +10,48 @@ from xml.etree import ElementTree
 from .sqldevpasswordcrypto import encryptv4, decryptv4
 
 class OracleConnection(Bunch):
+    """
+    An Oracle Connection configuration object.
+    """
 
-    def init(self):
-        """ """
+    def postinit(self):
+        """
+        Performs post-initialization tasks. You MUST call this after the
+        initialization of this object is complete.
+
+        This provides some default values and creates
+        some generated values based on what was read
+        from the XML file.
+        """
         if 'sid' in self:
-            self.service = self.sid
+            self.srvname = ("(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)"
+                            "(Host={hostname})(Port={port}))(CONNECT_DATA="
+                            "(SID={sid})))").format(**self)
         elif 'serviceName' in self:
-            self.service = self.serviceName
+            self.srvname = ("(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)"
+                            "(Host={hostname})(Port={port}))(CONNECT_DATA="
+                            "(SERVICE_NAME={serviceName})))").format(**self)
         else:
-            self.service = ''
+            self.srvname = ''
 
         if 'password' not in self:
             self.password = ''
 
-        self.passwordSafe = re.sub(r'\$', '\\$', self.password)
-
         self.ConnNameSafe = re.sub(r'\s', '', self.ConnName)
 
 
+def parse(xmlfile, password):
+    """
+    Parses a SQL Developer ``Connection.xml`` file. This could be
+    the default config file or an export made from SQL Developer.
 
+    A password is required to decrypt any passwords.
 
-def parse_sqldev_xml(xmlfile, password):
+    Only SQLDeveloper version 4 files are supported.
+
+    xmlfile: path to the ``Connection.xml`` file
+    password: the password to decode encrypted stored passwords
+    """
     tree = ElementTree.parse(xmlfile)
     references = tree.getroot()
 
@@ -43,10 +64,13 @@ def parse_sqldev_xml(xmlfile, password):
             addrValue = refaddress.find('Contents').text
 
             if addrType == 'password':
-                addrValue = decryptv4(addrValue, password)
+                try:
+                    addrValue = decryptv4(addrValue, password)
+                except:
+                    pass
 
             conn[addrType] = addrValue
 
-        conn.init()
+        conn.postinit()
         yield conn
 

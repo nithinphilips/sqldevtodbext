@@ -12,9 +12,9 @@ import logging
 import sys
 import re
 
-from argh import ArghParser, completion, arg
+from argh import ArghParser, completion, set_default_command
 
-from .sqldevfileparser import parse_sqldev_xml
+from .sqldevfileparser import parse
 
 # These arguments are used by this global dispatcher and each individual
 # stand-alone commands.
@@ -26,11 +26,7 @@ COMMON_PARSER.add_argument('--debug',
 
 def main():
     parser = ArghParser(parents=[COMMON_PARSER])
-    parser.add_commands(
-        [
-            printlines
-        ]
-    )
+    set_default_command(parser, sqldevtodbext)
     completion.autocomplete(parser)
 
     # Parse ahead
@@ -40,14 +36,22 @@ def main():
             level=logging.DEBUG,
             format='%(asctime)s %(levelname)s: %(message)s'
         )
-
     parser.dispatch()
 
-template = """" SQL Developer Connection Profile: {ConnName}
-let g:dbext_default_profile_oracle_{ConnNameSafe} = 'type=ORA:srvname=//{hostname}\:{port}/{service}:user={user}:passwd={passwordSafe}:cmd_terminator=;'"""
+TEMPLATE = ("\"SQL Developer Connection Profile: {ConnName}\n"
+            "let g:dbext_default_profile_{ConnNameSafe} = "
+            "'"
+            "type=ORA:srvname={srvname}"
+            ":user={user}:passwd={password}"
+            ":cmd_terminator=;"
+            "'")
 
-def printlines(xmlfile, password):
-    for connection in parse_sqldev_xml(xmlfile, password):
+def sqldevtodbext(filename, password="password"):
+    """
+    Converts a SQL Developer Connection.xml file to
+    DbExt connection profiles
+    """
+    for connection in parse(filename, password):
         if connection.RaptorConnectionType == "Oracle":
-            yield template.format(**connection)
+            yield TEMPLATE.format(**connection)
 
