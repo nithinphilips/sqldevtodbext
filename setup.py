@@ -28,8 +28,9 @@ setup(
     install_requires = [
         "argh",
         "argcomplete",
-        "Bunch",
-        "Crypto"
+        "bunch",
+        "pycrypto",
+        "Padding",
     ],
     version = version,
     description = "Export an Oracle SQL Developer profile to Vim DbExt",

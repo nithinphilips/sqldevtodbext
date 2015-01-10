@@ -2,7 +2,10 @@
 # PYTHON_ARGCOMPLETE_OK
 
 
-"""sqldevtodbext.__main__: executed when sqldevtodbext directory is called as script."""
+"""
+sqldevtodbext.__main__: executed when sqldevtodbext directory is called as
+                        script.
+"""
 
 from .sqldevtodbext import main
 

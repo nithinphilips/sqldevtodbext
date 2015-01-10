@@ -1,16 +1,23 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from Crypto.Cipher import AES, DES
+"""
+Provides methods to encrypt and decrypt passwords stored
+by SQL Developer.
+"""
+
+from Crypto.Cipher import DES
 from Crypto.Hash import MD5
 from Crypto import Random
 import Padding
 import logging
-import base64
 
 from argh import arg, dispatch_command
 
-def decryptv4(ciphertext, password, salt='\x05\x13\x99\x42\x93\x72\xE8\xAD', iterations=42):
+def decryptv4(ciphertext,
+              password,
+              salt='\x05\x13\x99\x42\x93\x72\xE8\xAD',
+              iterations=42):
     """
     Decrypts PBEWithMD5AndDES encrypted password.
 
@@ -32,14 +39,20 @@ def decryptv4(ciphertext, password, salt='\x05\x13\x99\x42\x93\x72\xE8\xAD', ite
     plaintext = decoder.decrypt(ciphertext)
     return Padding.removePadding(plaintext, blocksize=Padding.DES_blocksize)
 
-def encryptv4(plaintext, password, salt='\x05\x13\x99\x42\x93\x72\xE8\xAD', iterations=42):
+def encryptv4(plaintext,
+              password,
+              salt='\x05\x13\x99\x42\x93\x72\xE8\xAD',
+              iterations=42):
     """
     Encrypts as password using Java's PBEWithMD5AndDES method.
 
     The default salt and iteration values are from Oracle SQL Developer v4.
     """
     # http://stackoverflow.com/questions/24168246/replicate-javas-pbewithmd5anddes-in-python-2-7
-    plaintext = Padding.appendPadding(plaintext, blocksize=Padding.DES_blocksize)
+    plaintext = Padding.appendPadding(
+        plaintext,
+        blocksize=Padding.DES_blocksize
+    )
 
     hasher = MD5.new()
     hasher.update(password)
@@ -74,7 +87,10 @@ def decrypt(password):
     ciphertext = ciphertext.decode("hex")
 
     plaintext = desd.decrypt(ciphertext)
-    plaintext = Padding.removePadding(plaintext, blocksize=Padding.DES_blocksize)
+    plaintext = Padding.removePadding(
+        plaintext,
+        blocksize=Padding.DES_blocksize
+    )
     return plaintext
 
 def encrypt(plaintext):
@@ -88,19 +104,33 @@ def encrypt(plaintext):
 
     logging.debug("Key = {}".format(key.encode("hex")))
 
-    plaintext = Padding.appendPadding(plaintext, blocksize=Padding.DES_blocksize)
+    plaintext = Padding.appendPadding(
+        plaintext,
+        blocksize=Padding.DES_blocksize
+    )
 
     ciphertext = dese.encrypt(plaintext)
 
-    return "{}{}{}".format("05", key.encode("hex"), ciphertext.encode("hex")).upper()
+    return "{}{}{}".format(
+        "05",
+        key.encode("hex"),
+        ciphertext.encode("hex")
+    ).upper()
 
 @arg('--reverse', action='store_true', default=False,
      help="Decrypts the inputs. The default operation is to encrypt them.")
 @arg('passwords', metavar='password', type=str, nargs='+',
      help='The strings to encrypt or decrypt')
-@arg('--v4', action='store_true', default=False, 
+@arg('--v4', action='store_true', default=False,
      help='Uses the SQL Developer v4 method to encrypt and decrypt passwords.')
-def cli(reverse, passwords, v4=False, key='password'):
+def cli(reverse,
+        passwords,
+        v4=False,
+        key='password'):
+    """
+    Tool to encrypt and decrypt passwords stored by SQL Developer.
+    """
+
     longest = len(max(passwords, key=len))
 
     format_str = '%' + str(longest) + 's : %s'

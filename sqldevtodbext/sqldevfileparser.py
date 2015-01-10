@@ -7,12 +7,20 @@ import re
 
 from bunch import Bunch
 from xml.etree import ElementTree
-from .sqldevpasswordcrypto import encryptv4, decryptv4
+from .sqldevpasswordcrypto import decryptv4
 
 class OracleConnection(Bunch):
     """
     An Oracle Connection configuration object.
     """
+
+    def __init__(self):
+        self.srvname = ''
+        self.password = ''
+        self.ConnNameSafe = ''
+        self.name = ''
+        super(OracleConnection, self).__init__()
+
 
     def postinit(self):
         """
@@ -31,11 +39,6 @@ class OracleConnection(Bunch):
             self.srvname = ("(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)"
                             "(Host={hostname})(Port={port}))(CONNECT_DATA="
                             "(SERVICE_NAME={serviceName})))").format(**self)
-        else:
-            self.srvname = ''
-
-        if 'password' not in self:
-            self.password = ''
 
         self.ConnNameSafe = re.sub(r'\s', '', self.ConnName)
 
@@ -45,7 +48,8 @@ def parse(xmlfile, password):
     Parses a SQL Developer ``Connection.xml`` file. This could be
     the default config file or an export made from SQL Developer.
 
-    A password is required to decrypt any passwords.
+    A password is required to decrypt any passwords. If the decryption
+    fails for any reason, the encrypted value will be returned as-is.
 
     Only SQLDeveloper version 4 files are supported.
 
@@ -66,7 +70,7 @@ def parse(xmlfile, password):
             if addrType == 'password':
                 try:
                     addrValue = decryptv4(addrValue, password)
-                except:
+                except Exception:
                     pass
 
             conn[addrType] = addrValue

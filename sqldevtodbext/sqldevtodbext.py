@@ -6,11 +6,8 @@
 
 __version__ = "0.1.0"
 
-import argcomplete
 import argparse
 import logging
-import sys
-import re
 
 from argh import ArghParser, completion, set_default_command
 
@@ -24,7 +21,18 @@ COMMON_PARSER.add_argument('--debug',
                            default=False,
                            help="Enable debug logging.")
 
+TEMPLATE = ("\"SQL Developer Connection Profile: {ConnName}\n"
+            "let g:dbext_default_profile_{ConnNameSafe} = "
+            "'"
+            "type=ORA:srvname={srvname}"
+            ":user={user}:passwd={password}"
+            ":cmd_terminator=;"
+            "'")
+
 def main():
+    """
+    Main entry-point for the application
+    """
     parser = ArghParser(parents=[COMMON_PARSER])
     set_default_command(parser, sqldevtodbext)
     completion.autocomplete(parser)
@@ -38,13 +46,6 @@ def main():
         )
     parser.dispatch()
 
-TEMPLATE = ("\"SQL Developer Connection Profile: {ConnName}\n"
-            "let g:dbext_default_profile_{ConnNameSafe} = "
-            "'"
-            "type=ORA:srvname={srvname}"
-            ":user={user}:passwd={password}"
-            ":cmd_terminator=;"
-            "'")
 
 def sqldevtodbext(filename, password="password"):
     """
