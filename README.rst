@@ -43,5 +43,24 @@ centralized ``bin`` directory, which should be in your ``PATH``. On Windows,
 ``sqldevtodbext.exe`` is placed into a centralized ``Scripts`` directory which
 should also be in your ``PATH``.
 
+License
+-------
+.. code::
 
-.. "C:\Users\xxx\AppData\Roaming\SQL Developer\system4.0.1.14.48\o.jdeveloper.db.connection.12.1.3.2.41.140207.1351\connections.xml"
+    Odel. Tool to upload Data Integrator files to IBM Tririga.
+    Copyright (C) 2014 Nithin Philips
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+.. ""
