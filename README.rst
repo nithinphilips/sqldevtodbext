@@ -1,7 +1,6 @@
 sqldevtodbext
 =============
-This is a utility to export your stored `SQL Developer`_ connection profiles to
-DbExt_ (a Vim plugin to run SQL) configuration.
+This is a utility ` (a Vim plugin to run SQL) configuration.
 
 It can decrypt any stored passwords from SQL Developer v4 exports.
 
@@ -47,8 +46,8 @@ License
 -------
 .. code::
 
-    Odel. Tool to upload Data Integrator files to IBM Tririga.
-    Copyright (C) 2014 Nithin Philips
+    sqldevtodbext. Tool to to export SQL Developer connection profiles to DbExt
+    Copyright (C) 2015 Nithin Philips
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
